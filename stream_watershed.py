@@ -42,14 +42,40 @@ nbhs = list(nbhs)
 nbhs.sort()
 
 #nbhs = set(v.db.select -c map=streams_002_34_main_seg1000_net@p_Gudbrand_Hydro_stefan.blumentrath layer=2 columns=neighborhood,cluster where="CAST(neighborhood AS TEXT) LIKE '%{}'".format(suffix))
+"""
+Region could be adjusted to the extend of the last x watersheds in order to speedup processing with less risk to be influenced by mismatch between stream and DEM
+x = 5
+
+# Before the loop over nbhs
+recent_nbhs = []
+
+# Within the loop over nbhs
+recent_nbhs.append(n)
+if len(recent_nbhs) > x:
+    del recent_nbhs[0]
+    gscript.run_command('g.region', vector=','.join('{}_nbh{}_basins'.format(input, rn) for rn in recent_nbhs), align=draindir)
+else:
+    gscript.run_command('g.region', raster=draindir, align=draindir)
+"""
 gscript.run_command('g.region', flags='p', raster=draindir, align=draindir)
 i = 0
 for n in nbhs:
     i = i + 1
     start = datetime.now()
     print 'Computing step {} of {}'.format(i, len(nbhs))
+    """
+    # If nodes are on layer 1 categories are used in r.stream.basins and it is no longer necessary to convert the points to raster for nput in r.stream.basins
+    # Extract nodes with current neighborhood value
+    gscript.run_command('v.extract', overwrite=True, quiet=True, input=input, layer=1, where="neighborhood = {}".format(n), output='{}_nbh{}'.format(input, n))
+
+    # Generate watershed
+    gscript.run_command('r.stream.basins', overwrite=True, quiet=True, direction=draindir, stream_rast='{}_nbh{}'.format(input, n), memory=30000, basins='{}_nbh{}_basins'.format(input, n))
+    """
+    # Extract nodes with current neighborhood value
     gscript.run_command('v.extract', overwrite=True, quiet=True, input=input, layer=2, where="neighborhood = {}".format(n), output='{}_nbh{}'.format(input, n))
-    #gscript.run_command('g.region', vector='{}_nbh{}'.format(input, n), align=draindir)
+
+    # Convert points to raster
+    # gscript.run_command('g.region', vector='{}_nbh{}'.format(input, n), align=draindir)
     gscript.run_command('v.to.rast', overwrite=True, quiet=True, input='{}_nbh{}'.format(input, n), layer=2, type='point', where="neighborhood = {}".format(n), output='{}_nbh{}'.format(input, n), use='cat', memory=30000)
 
     # Generate watershed
@@ -105,7 +131,13 @@ for n in nbhs:
                             other_column='cat', quiet=True)
         c.execute('DROP TABLE IF EXISTS {0}_stat'.format(d))
 
-			
+    gscript.run_command('v.db.join', map='{}_nbh{}_basins'.format(input, n), layer=1,
+                        column='cat', other_table='{}_nbh{}'.format(input, n),
+                        other_column='cat', quiet=True)
+
+"""
+The following g.region command can be removed when region is adjusted to the last x watersheds at the beginning of the loop
+"""
     gscript.run_command('g.region', raster=draindir, align=draindir)
     gscript.run_command('g.remove', quiet=True, flags='f', type='vector', pattern='{}_nbh{}'.format(input, n))
     # Check if SQLite output exists or not
