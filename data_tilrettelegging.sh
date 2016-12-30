@@ -102,7 +102,7 @@ v.overlay --overwrite --verbose ainput=streams_${catchmentMapSuffix}_contribut_p
 # Split contributories into segments of max 1 km
 v.split -f --overwrite input=streams_${catchmentMapSuffix}_contribut output=streams_${catchmentMapSuffix}_contribut_seg$segLength length=$segLength
 
-~/Avd15GIS/Prosjekter/Gudbrand_Hydro/v.igraph.order.py --overwrite --verbose input=streams_${catchmentMapSuffix}_contribut_seg$segLength output=streams_${catchmentMapSuffix}_contribut_seg${segLength}_net
+~/Avd15GIS/Prosjekter/Gudbrand_Hydro/v.igraph.order.py --overwrite --verbose input=streams_${catchmentMapSuffix}_contribut_seg$segLength output=streams_${catchmentMapSuffix}_contribut_seg${segLength}_net # node_layer=1 # with nodes on layer 1 output can be used in r.stream.basins
 
 python ~/Avd15GIS/Prosjekter/Gudbrand_Hydro/stream_watershed.py contribut
 
@@ -116,6 +116,6 @@ v.overlay --overwrite --verbose ainput=streams_${catchmentMapSuffix}_main_pre at
 # Split main stream into segments of max 1 km
 v.split -f --overwrite input=streams_${catchmentMapSuffix}_main output=streams_${catchmentMapSuffix}_main_seg$segLength length=$segLength
 
-~/Avd15GIS/Prosjekter/Gudbrand_Hydro/v.igraph.order.py --overwrite --verbose input=streams_${catchmentMapSuffix}_main_seg$segLength output=streams_${catchmentMapSuffix}_main_seg${segLength}_net
+~/Avd15GIS/Prosjekter/Gudbrand_Hydro/v.igraph.order.py --overwrite --verbose input=streams_${catchmentMapSuffix}_main_seg$segLength output=streams_${catchmentMapSuffix}_main_seg${segLength}_net # node_layer=1 # with nodes on layer 1 output can be used in r.stream.basins
 
 python ~/Avd15GIS/Prosjekter/Gudbrand_Hydro/stream_watershed.py main
